@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="fbx-conv" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Release Win32">
+				<Option output="fbx-conv" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-DFBXSDK_NEW_API" />
+					<Add option="-DNDEBUG" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-D_CRT_NONSTDC_NO_WARNINGS" />
+					<Add directory="$(FBX_SDK_ROOT)/include" />
+					<Add directory="../../libs/libpng/include" />
+					<Add directory="../../libs/zlib/include" />
+				</Compiler>
+				<Linker>
+					<Add library="libpng14.lib" />
+					<Add library="zlib.lib" />
+					<Add library="libfbxsdk-md.lib" />
+					<Add directory="$(FBX_SDK_ROOT)/lib/vs2012/x86" />
+					<Add directory="$(FBX_SDK_ROOT)/lib/vs2012/x86/release" />
+					<Add directory="../../libs/libpng/lib/windows/x86" />
+					<Add directory="../../libs/zlib/lib/windows/x86" />
+				</Linker>
+			</Target>
+			<Target title="Debug Win32">
+				<Option output="fbx-conv" prefix_auto="1" extension_auto="1" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-DFBXSDK_NEW_API" />
+					<Add option="-DDEBUG" />
+					<Add option="-D_CRT_SECURE_NO_WARNINGS" />
+					<Add option="-D_CRT_NONSTDC_NO_WARNINGS" />
+					<Add directory="$(FBX_SDK_ROOT)/include" />
+					<Add directory="../../libs/libpng/include" />
+					<Add directory="../../libs/zlib/include" />
+				</Compiler>
+				<Linker>
+					<Add library="libpng14.lib" />
+					<Add library="zlib.lib" />
+					<Add library="libfbxsdk-md.lib" />
+					<Add directory="$(FBX_SDK_ROOT)/lib/vs2012/x86" />
+					<Add directory="$(FBX_SDK_ROOT)/lib/vs2012/x86/debug" />
+					<Add directory="../../libs/libpng/lib/windows/x86" />
+					<Add directory="../../libs/zlib/lib/windows/x86" />
+				</Linker>
+			</Target>
+		</Build>
+		<Unit filename="../../src/FbxConv.h" />
+		<Unit filename="../../src/FbxConvCommand.h" />
+		<Unit filename="../../src/Settings.h" />
+		<Unit filename="../../src/json/BaseJSONWriter.h" />
+		<Unit filename="../../src/json/JSONWriter.h" />
+		<Unit filename="../../src/json/UBJSON.h" />
+		<Unit filename="../../src/json/UBJSONWriter.h" />
+		<Unit filename="../../src/log/codes.h" />
+		<Unit filename="../../src/log/log.h" />
+		<Unit filename="../../src/log/messages.h" />
+		<Unit filename="../../src/main.cpp" />
+		<Unit filename="../../src/modeldata/Animation.h" />
+		<Unit filename="../../src/modeldata/Attributes.h" />
+		<Unit filename="../../src/modeldata/C3BFile.cpp" />
+		<Unit filename="../../src/modeldata/C3BFile.h" />
+		<Unit filename="../../src/modeldata/FileIO.cpp" />
+		<Unit filename="../../src/modeldata/FileIO.h" />
+		<Unit filename="../../src/modeldata/Keyframe.h" />
+		<Unit filename="../../src/modeldata/Material.h" />
+		<Unit filename="../../src/modeldata/Mesh.h" />
+		<Unit filename="../../src/modeldata/MeshPart.h" />
+		<Unit filename="../../src/modeldata/Model.h" />
+		<Unit filename="../../src/modeldata/Node.h" />
+		<Unit filename="../../src/modeldata/NodeAnimation.h" />
+		<Unit filename="../../src/modeldata/NodePart.h" />
+		<Unit filename="../../src/modeldata/Reference.cpp" />
+		<Unit filename="../../src/modeldata/Reference.h" />
+		<Unit filename="../../src/modeldata/ReferenceTable.cpp" />
+		<Unit filename="../../src/modeldata/ReferenceTable.h" />
+		<Unit filename="../../src/modeldata/Serialization.cpp" />
+		<Unit filename="../../src/modeldata/WriteBinnary.cpp" />
+		<Unit filename="../../src/readers/FbxConverter.h" />
+		<Unit filename="../../src/readers/FbxMeshInfo.h" />
+		<Unit filename="../../src/readers/Reader.h" />
+		<Unit filename="../../src/readers/matrix3.h" />
+		<Unit filename="../../src/readers/util.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
