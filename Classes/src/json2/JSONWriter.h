@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2011 See AUTHORS file.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -14,7 +14,7 @@
  * limitations under the License.
  ******************************************************************************/
 /** @author Xoppa */
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #pragma once
 #endif
 #ifndef JSON_JSONWRITER_H
@@ -37,7 +37,7 @@ public:
 public:
 	std::ostream &stream;
 
-	JSONWriter(std::ostream &stream) : BaseJSONWriter(), stream(stream), indentCount(0), 
+	JSONWriter(std::ostream &stream) : BaseJSONWriter(), stream(stream), indentCount(0),
 		newline("\r\n"), indent("\t"), openObject("{"), closeObject("}"), openArray("["), closeArray("]"), keySeparator(": "), valueSeparator(", ")
 	{}
 protected:
@@ -67,7 +67,7 @@ protected:
 		if (!inl)
 			nextline();
 	}
-	virtual void writeCloseArray(const bool &varsize, const long long &size, const bool &inl) {		
+	virtual void writeCloseArray(const bool &varsize, const long long &size, const bool &inl) {
 		if (--indentCount < 0)
 			indentCount = 0;
 		if (!inl)
@@ -112,7 +112,7 @@ protected:
 	}
 
 	virtual void writeValue(const long &value, const bool &iskey = false) {
-		sprintf(tmp, "% 3i", value);
+		sprintf(tmp, "% 3i", (int) value);
 		stream << tmp;
 		if (iskey)
 			stream << keySeparator;
@@ -149,7 +149,7 @@ protected:
 			stream << keySeparator;
 	}
 	virtual void writeValue(const unsigned long &value, const bool &iskey = false) {
-		sprintf(tmp, "% 3i", value);
+		sprintf(tmp, "% 3i", (int) value);
 		stream << tmp;
 		if (iskey)
 			stream << keySeparator;

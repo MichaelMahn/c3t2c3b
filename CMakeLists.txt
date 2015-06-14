@@ -107,21 +107,74 @@ set(PLATFORM_SPECIFIC_HEADERS
 endif()
 
 include_directories(
+  ${COCOS2D_ROOT}/cocos/external
   /usr/local/include/GLFW
   /usr/include/GLFW
   ${COCOS2D_ROOT}/cocos
   Classes
+  /opt/include
 )
 
 set(GAME_SRC
   Classes/AppDelegate.cpp
   Classes/HelloWorldScene.cpp
+  Classes/src/modeldata/Reference.cpp
+  Classes/src/modeldata/Serialization.cpp
+  Classes/src/modeldata/ReferenceTable.cpp
+  Classes/src/modeldata/FileIO.cpp
+  Classes/src/modeldata/WriteBinnary.cpp
+  Classes/src/modeldata/C3BFile.cpp
   ${PLATFORM_SPECIFIC_SRC}
 )
 
 set(GAME_HEADERS
+  cocos2d/cocos/3d/CCBundle3D.h
   Classes/AppDelegate.h
   Classes/HelloWorldScene.h
+Classes/src/json2/JSONWriter.h
+Classes/src/json2/UBJSON.h
+Classes/src/json2/BaseJSONWriter.h
+Classes/src/json2/UBJSONWriter.h
+Classes/src/readers/Reader.h
+Classes/src/readers/matrix3.h
+Classes/src/readers/FbxMeshInfo.h
+Classes/src/readers/util.h
+Classes/src/readers/FbxConverter.h
+Classes/src/readers/C3TConverter.h
+Classes/src/log/messages.h
+Classes/src/log/log.h
+Classes/src/log/codes.h
+Classes/src/FbxConvCommand.h
+Classes/src/Settings.h
+Classes/src/modeldata/NodeAnimation.h
+Classes/src/modeldata/Material.h
+Classes/src/modeldata/Model.h
+Classes/src/modeldata/Node.h
+Classes/src/modeldata/Mesh.h
+Classes/src/modeldata/Attributes.h
+Classes/src/modeldata/FileIO.h
+Classes/src/modeldata/MeshPart.h
+Classes/src/modeldata/Keyframe.h
+Classes/src/modeldata/Animation.h
+Classes/src/modeldata/NodePart.h
+Classes/src/modeldata/C3BFile.h
+Classes/src/modeldata/Reference.h
+Classes/src/modeldata/ReferenceTable.h
+Classes/src/FbxConv.h
+Classes/libs/zlib/include/trees.h
+Classes/libs/zlib/include/inffixed.h
+Classes/libs/zlib/include/inflate.h
+Classes/libs/zlib/include/inffast.h
+Classes/libs/zlib/include/zconf.h
+Classes/libs/zlib/include/zlib.h
+Classes/libs/zlib/include/zutil.h
+Classes/libs/zlib/include/inftrees.h
+Classes/libs/zlib/include/deflate.h
+Classes/libs/zlib/include/crc32.h
+Classes/libs/zlib/include/gzguts.h
+Classes/libs/libpng/include/pngpriv.h
+Classes/libs/libpng/include/pngconf.h
+Classes/libs/libpng/include/png.h
   ${PLATFORM_SPECIFIC_HEADERS}
 )
 
@@ -131,7 +184,7 @@ else()
 add_executable(${APP_NAME} ${GAME_SRC})
 endif()
 
-target_link_libraries(${APP_NAME} cocos2d)
+target_link_libraries(${APP_NAME} cocos2d -lpng -lz -lpthread -lfbxsdk -ldl)
 
 set(APP_BIN_DIR "${CMAKE_BINARY_DIR}/bin")
 

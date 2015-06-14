@@ -114,6 +114,7 @@ class FbxConv {
 			case FILETYPE_FBX:
 				return new readers::FbxConverter(log, simpleTextureCallback);
 			case FILETYPE_C3T:
+				CCLOG("C3T_Converter");
 				return new readers::C3TConverter();
 			case FILETYPE_G3DB:
 			case FILETYPE_G3DJ:

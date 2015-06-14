@@ -1,12 +1,12 @@
 /*******************************************************************************
  * Copyright 2011 See AUTHORS file.
- * 
+ *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *   http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -51,7 +51,7 @@ struct FbxConvCommand {
         settings->exportPart = EXPORT_PART_ALL;
         settings->normalMap = false;
         settings->compressLevel = COMPRESS_LEVEL_DEFAULT;
-            
+
 		for (int i = 1; i < argc; i++) {
 			const char *arg = argv[i];
 			const int len = (int)strlen(arg);
@@ -112,7 +112,7 @@ struct FbxConvCommand {
 		for (int i = 1; i < argc; i++) {
 			if (i > 1)
 				printf(" ");
-			printf(argv[i]);
+			//printf(argv[i]);
 		}
 		printf("\n");
 	}
@@ -155,11 +155,11 @@ private:
 		if (inType == FILETYPE_AUTO)
 			inType = guessType(inFile, FILETYPE_IN_DEFAULT);
 #else
-		settings->inType = FILETYPE_IN_DEFAULT;
+		settings->inType = FILETYPE_C3T;
 #endif
 		if (settings->outFile.empty())
 			setExtension(
-				settings->outFile = settings->inFile, 
+				settings->outFile = settings->inFile,
 				settings->outType = (settings->outType == FILETYPE_AUTO ? FILETYPE_OUT_DEFAULT : settings->outType));
 		else if (settings->outType == FILETYPE_AUTO)
 			settings->outType = guessType(settings->outFile);
