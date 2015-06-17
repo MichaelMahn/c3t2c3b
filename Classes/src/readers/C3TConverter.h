@@ -14,7 +14,7 @@ class C3TConverter : public Reader
 		C3TConverter() {}
 		virtual ~C3TConverter() {}
 
-		virtual bool load(Settings *settings) override {
+		virtual bool load(Settings* settings) override {
 			cocos2d::Bundle3D *bundle = cocos2d::Bundle3D::createBundle();
 			if (!bundle->load(settings->inFile)) {
 				cocos2d::Bundle3D::destroyBundle(bundle);
@@ -23,13 +23,14 @@ class C3TConverter : public Reader
 
 			bool ret = bundle->loadMeshDatas(meshDatas)
 			        && bundle->loadMaterials(materialDatas)
-			        && bundle->loadNodes(nodeDatas);
+			        && bundle->loadNodes(nodeDatas)
+			        && bundle->loadAnimationData("", &animationData);
 			cocos2d::Bundle3D::destroyBundle(bundle);
 
 			return ret;
 		}
 
-		virtual bool convert(Settings *settings, Model *const &model) override {
+		virtual bool convert(Settings* settings, Model* const& model) override {
 			for(cocos2d::NMaterialData const& coco_matIt : materialDatas.materials) {
 				Material *conv_mat = new Material;
 				conv_mat->id = coco_matIt.id;
@@ -47,7 +48,7 @@ class C3TConverter : public Reader
 
 			for(cocos2d::MeshData const* coco_meshIt : meshDatas.meshDatas) {
 				Mesh *conv_mesh = new Mesh;
-				conv_mesh->vertexSize = coco_meshIt->vertexSizeInFloat;
+				conv_mesh->vertexSize = coco_meshIt->getPerVertexSize() / sizeof(float);
 				for(float const& v : coco_meshIt->vertex) {
 					conv_mesh->vertices.push_back(v);
 				}
@@ -75,20 +76,16 @@ class C3TConverter : public Reader
 				for(cocos2d::MeshVertexAttrib const& coco_meshAtt : coco_meshIt->attribs) {
 					char const* AttributeNames[] = {"UNKNOWN", "VERTEX_ATTRIB_POSITION", "VERTEX_ATTRIB_NORMAL", "VERTEX_ATTRIB_COLOR", "COLORPACKED", "VERTEX_ATTRIB_TANGENT", "VERTEX_ATTRIB_BINORMAL", "VERTEX_ATTRIB_TEX_COORD", "VERTEX_ATTRIB_TEX_COORD1", "VERTEX_ATTRIB_TEX_COORD2", "VERTEX_ATTRIB_TEX_COORD3", "VERTEX_ATTRIB_TEX_COORD4", "VERTEX_ATTRIB_TEX_COORD5", "VERTEX_ATTRIB_TEX_COORD6", "VERTEX_ATTRIB_TEX_COORD7", "VERTEX_ATTRIB_BLEND_WEIGHT", "VERTEX_ATTRIB_BLEND_INDEX", "BLENDWEIGHT2", "BLENDWEIGHT3", "BLENDWEIGHT4", "BLENDWEIGHT5", "BLENDWEIGHT6", "BLENDWEIGHT7"};
 					MeshVertexAttrib conv_att;
-					CCLOG("%i", coco_meshAtt.vertexAttrib);
-					if(coco_meshAtt.vertexAttrib < sizeof(AttributeNames) / sizeof(char const*)) {
-						conv_att.name = AttributeNames[coco_meshAtt.vertexAttrib];
+					if(convAtt(coco_meshAtt.vertexAttrib) < sizeof(AttributeNames) / sizeof(char const*)) {
+						conv_att.name = AttributeNames[convAtt(coco_meshAtt.vertexAttrib)];
 					} else {
 						conv_att.name = "UNKNOWN";
 					}
 					conv_att.size = coco_meshAtt.size;
 					conv_att.type = "GL_FLOAT";
 					conv_mesh->attributes.attributemap[conv_att.name] = conv_att;
-					//coco_meshAtt.vertexAttrib
-					conv_mesh->attributes.set(coco_meshAtt.vertexAttrib, true);
+					conv_mesh->attributes.set(convAtt(coco_meshAtt.vertexAttrib), true);
 				}
-
-				CCLOG("%i", conv_mesh->attributes.size());
 
 				model->meshes.push_back(conv_mesh);
 			}
@@ -99,12 +96,73 @@ class C3TConverter : public Reader
 			for(cocos2d::NodeData const* coco_node : nodeDatas.skeleton) {
 				model->nodes.push_back(loadNode(*coco_node, true, model));
 			}
+
+			Animation *conv_anim = new Animation;
+			//conv_anim->id = animationData.
+			conv_anim->length = animationData._totalTime;
+			for(auto const& it1 : animationData._translationKeys) {
+				NodeAnimation *conv_nodeAnim = findOrCreateNodeAnimation(findNode(it1.first, model->nodes), *conv_anim);
+				for(cocos2d::Animation3DData::Vec3Key const& it2 : it1.second) {
+					Keyframe *keyF = findOrCreateKeyframe(it2._time, *conv_nodeAnim);
+					keyF->hasTranslation = true;
+					keyF->time = it2._time;
+					keyF->translation[0] = it2._key.x;
+					keyF->translation[1] = it2._key.y;
+					keyF->translation[2] = it2._key.z;
+					conv_nodeAnim->translate = true;
+				}
+			}
+
+			for(auto const& it1 : animationData._scaleKeys) {
+				NodeAnimation *conv_nodeAnim = findOrCreateNodeAnimation(findNode(it1.first, model->nodes), *conv_anim);
+				for(cocos2d::Animation3DData::Vec3Key const& it2 : it1.second) {
+					Keyframe *keyF = findOrCreateKeyframe(it2._time, *conv_nodeAnim);
+					keyF->hasScale = true;
+					keyF->time = it2._time;
+					keyF->scale[0] = it2._key.x;
+					keyF->scale[1] = it2._key.y;
+					keyF->scale[2] = it2._key.z;
+					conv_nodeAnim->scale = true;
+				}
+			}
+
+			for(auto const& it1 : animationData._rotationKeys) {
+				NodeAnimation *conv_nodeAnim = findOrCreateNodeAnimation(findNode(it1.first, model->nodes), *conv_anim);
+				for(cocos2d::Animation3DData::QuatKey const& it2 : it1.second) {
+					Keyframe *keyF = findOrCreateKeyframe(it2._time, *conv_nodeAnim);
+					keyF->hasRotation = true;
+					keyF->time = it2._time;
+					keyF->rotation[0] = it2._key.x;
+					keyF->rotation[1] = it2._key.y;
+					keyF->rotation[2] = it2._key.z;
+					keyF->rotation[3] = it2._key.w;
+					conv_nodeAnim->rotate = true;
+				}
+			}
+			model->animations.push_back(conv_anim);
 			return true;
 		}
 
 	protected:
 	private:
-		Node* loadNode(cocos2d::NodeData const& pNode, bool skeleton, Model *const &model) {
+		int convAtt(int cocoAtt) {
+			switch(cocoAtt) {
+				case 0: return 1;
+				case 1: return 3;
+				case 2: return 7;
+				case 3: return 8;
+				case 4: return 9;
+				case 5: return 10;
+				case 6: return 2;
+				case 7: return 15;
+				case 8: return 16;
+				case 9: return 0;
+				default: return 0;
+			}
+			return 0;
+		}
+
+		Node* loadNode(cocos2d::NodeData const& pNode, bool skeleton, Model* const model) {
 			Node *conv_node = new Node;
 			conv_node->id = pNode.id;
 			memcpy(conv_node->transforms, pNode.transform.m, sizeof(conv_node->transforms));
@@ -138,9 +196,48 @@ class C3TConverter : public Reader
 			return conv_node;
 		}
 
+		Node const* findNode(std::string const& nodeName, std::vector<Node*> const& vec) {
+			for(Node const* node : vec) {
+				if (node->id == nodeName) return node;
+				Node const* n2 = findNode(nodeName, node->children);
+				if (n2) return n2;
+			}
+			return nullptr;
+		}
+
+		Keyframe* findOrCreateKeyframe(float time, NodeAnimation& nodeAnim) {
+			Keyframe *ret;
+			std::vector<Keyframe*>::iterator it = std::find_if(nodeAnim.keyframes.begin(),
+			                                                   nodeAnim.keyframes.end(),
+			                                                   [time](Keyframe* const& keyframe){return keyframe->time == time;});
+			if (nodeAnim.keyframes.end() == it) {
+				ret = new Keyframe;
+				nodeAnim.keyframes.push_back(ret);
+			} else {
+				ret = *it;
+			}
+			return ret;
+		}
+
+		NodeAnimation* findOrCreateNodeAnimation(Node const* node, Animation& animation) {
+			NodeAnimation *ret;
+			std::vector<NodeAnimation*>::iterator it = std::find_if(animation.nodeAnimations.begin(),
+			                                                        animation.nodeAnimations.end(),
+			                                                        [node](NodeAnimation* const nodeAnimation){return nodeAnimation->node == node;});
+			if (animation.nodeAnimations.end() == it) {
+				ret = new NodeAnimation;
+				animation.nodeAnimations.push_back(ret);
+				ret->node = node;
+			} else {
+				ret = *it;
+			}
+			return ret;
+		}
+
 		cocos2d::MeshDatas meshDatas;
 		cocos2d::MaterialDatas materialDatas;
 		cocos2d::NodeDatas nodeDatas;
+		cocos2d::Animation3DData animationData;
 };
 
 } // namespace readers
