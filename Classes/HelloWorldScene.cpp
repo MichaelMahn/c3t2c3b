@@ -1,17 +1,8 @@
 #include "HelloWorldScene.h"
-#include "src/FbxConv.h"
 
-#include <fbxsdk.h>
-#include "src/Settings.h"
-#include "src/FbxConvCommand.h"
-#include "src/readers/FbxConverter.h"
-#include "src/json2/JSONWriter.h"
-#include "src/json2/UBJSONWriter.h"
 #include <string>
 #include <iostream>
 #include <fstream>
-
-#include "src/log/messages.h"
 
 #include <stdio.h>
 #include <3d/CCBundle3D.h>
@@ -43,7 +34,12 @@ bool HelloWorld::init()
         return false;
     }
 
-	char const *filePath = ((std::string) cocos2d::FileUtils::getInstance()->getWritablePath() + "table.c3t").c_str();
+	auto label = Label::createWithTTF("", "fonts/Arial.ttf", 34);
+	label->setPosition(100, 100);
+
+	this->addChild(label);
+
+	/*char const *filePath = ((std::string) cocos2d::FileUtils::getInstance()->getWritablePath() + "orc.c3t").c_str();
 
 	//CCLOG(filePath);
 
@@ -51,7 +47,7 @@ bool HelloWorld::init()
 	fbxconv::FbxConv conv(&log);
 	int argc = 3;
 	char const *argv[3] = {"", "-a", filePath};
-	conv.execute(argc, argv);
+	conv.execute(argc, argv);*/
 
 	/*std::string _data = "C3B\0";
 

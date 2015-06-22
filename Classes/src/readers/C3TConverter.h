@@ -23,8 +23,10 @@ class C3TConverter : public Reader
 
 			bool ret = bundle->loadMeshDatas(meshDatas)
 			        && bundle->loadMaterials(materialDatas)
-			        && bundle->loadNodes(nodeDatas)
-			        && bundle->loadAnimationData("", &animationData);
+			        && bundle->loadNodes(nodeDatas);
+
+			//        && bundle->loadAnimationData("", &animationData);
+			bundle->loadAnimationNamesJson(animationDatas);
 			cocos2d::Bundle3D::destroyBundle(bundle);
 
 			return ret;
@@ -39,8 +41,8 @@ class C3TConverter : public Reader
 					conv_text->id = coco_textIt.id;
 					conv_text->path = coco_textIt.filename;
 					conv_text->usage = (Material::Texture::Usage) coco_textIt.type;
-					conv_text->wrapModeU = (FbxTexture::EWrapMode) coco_textIt.wrapS;
-					conv_text->wrapModeV = (FbxTexture::EWrapMode) coco_textIt.wrapT;
+					conv_text->wrapModeU = (FbxTexture::EWrapMode) (coco_textIt.wrapS & 0xff ^ 0x01);
+					conv_text->wrapModeV = (FbxTexture::EWrapMode) (coco_textIt.wrapT & 0xff ^ 0x01);
 					conv_mat->textures.push_back(conv_text);
 				}
 				model->materials.push_back(conv_mat);
@@ -90,56 +92,59 @@ class C3TConverter : public Reader
 				model->meshes.push_back(conv_mesh);
 			}
 
-			for(cocos2d::NodeData const* coco_node : nodeDatas.nodes) {
-				model->nodes.push_back(loadNode(*coco_node, false, model));
-			}
 			for(cocos2d::NodeData const* coco_node : nodeDatas.skeleton) {
-				model->nodes.push_back(loadNode(*coco_node, true, model));
+				model->nodes.push_back(loadNode(coco_node, true, model));
+			}
+			for(cocos2d::NodeData const* coco_node : nodeDatas.nodes) {
+				model->nodes.push_back(loadNode(coco_node, false, model));
 			}
 
-			Animation *conv_anim = new Animation;
-			//conv_anim->id = animationData.
-			conv_anim->length = animationData._totalTime;
-			for(auto const& it1 : animationData._translationKeys) {
-				NodeAnimation *conv_nodeAnim = findOrCreateNodeAnimation(findNode(it1.first, model->nodes), *conv_anim);
-				for(cocos2d::Animation3DData::Vec3Key const& it2 : it1.second) {
-					Keyframe *keyF = findOrCreateKeyframe(it2._time, *conv_nodeAnim);
-					keyF->hasTranslation = true;
-					keyF->time = it2._time;
-					keyF->translation[0] = it2._key.x;
-					keyF->translation[1] = it2._key.y;
-					keyF->translation[2] = it2._key.z;
-					conv_nodeAnim->translate = true;
+			for(auto& it : animationDatas) {
+				Animation *conv_anim = new Animation;
+				conv_anim->id = it.first;
+				cocos2d::Animation3DData &animationData = it.second;
+				conv_anim->length = animationData._totalTime;
+				for(auto const& it1 : animationData._translationKeys) {
+					NodeAnimation *conv_nodeAnim = findOrCreateNodeAnimation(findNode(it1.first, model->nodes), *conv_anim);
+					for(cocos2d::Animation3DData::Vec3Key const& it2 : it1.second) {
+						Keyframe *keyF = findOrCreateKeyframe(it2._time, *conv_nodeAnim);
+						keyF->hasTranslation = true;
+						keyF->time = it2._time;
+						keyF->translation[0] = it2._key.x;
+						keyF->translation[1] = it2._key.y;
+						keyF->translation[2] = it2._key.z;
+						conv_nodeAnim->translate = true;
+					}
 				}
-			}
 
-			for(auto const& it1 : animationData._scaleKeys) {
-				NodeAnimation *conv_nodeAnim = findOrCreateNodeAnimation(findNode(it1.first, model->nodes), *conv_anim);
-				for(cocos2d::Animation3DData::Vec3Key const& it2 : it1.second) {
-					Keyframe *keyF = findOrCreateKeyframe(it2._time, *conv_nodeAnim);
-					keyF->hasScale = true;
-					keyF->time = it2._time;
-					keyF->scale[0] = it2._key.x;
-					keyF->scale[1] = it2._key.y;
-					keyF->scale[2] = it2._key.z;
-					conv_nodeAnim->scale = true;
+				for(auto const& it1 : animationData._scaleKeys) {
+					NodeAnimation *conv_nodeAnim = findOrCreateNodeAnimation(findNode(it1.first, model->nodes), *conv_anim);
+					for(cocos2d::Animation3DData::Vec3Key const& it2 : it1.second) {
+						Keyframe *keyF = findOrCreateKeyframe(it2._time, *conv_nodeAnim);
+						keyF->hasScale = true;
+						keyF->time = it2._time;
+						keyF->scale[0] = it2._key.x;
+						keyF->scale[1] = it2._key.y;
+						keyF->scale[2] = it2._key.z;
+						conv_nodeAnim->scale = true;
+					}
 				}
-			}
 
-			for(auto const& it1 : animationData._rotationKeys) {
-				NodeAnimation *conv_nodeAnim = findOrCreateNodeAnimation(findNode(it1.first, model->nodes), *conv_anim);
-				for(cocos2d::Animation3DData::QuatKey const& it2 : it1.second) {
-					Keyframe *keyF = findOrCreateKeyframe(it2._time, *conv_nodeAnim);
-					keyF->hasRotation = true;
-					keyF->time = it2._time;
-					keyF->rotation[0] = it2._key.x;
-					keyF->rotation[1] = it2._key.y;
-					keyF->rotation[2] = it2._key.z;
-					keyF->rotation[3] = it2._key.w;
-					conv_nodeAnim->rotate = true;
+				for(auto const& it1 : animationData._rotationKeys) {
+					NodeAnimation *conv_nodeAnim = findOrCreateNodeAnimation(findNode(it1.first, model->nodes), *conv_anim);
+					for(cocos2d::Animation3DData::QuatKey const& it2 : it1.second) {
+						Keyframe *keyF = findOrCreateKeyframe(it2._time, *conv_nodeAnim);
+						keyF->hasRotation = true;
+						keyF->time = it2._time;
+						keyF->rotation[0] = it2._key.x;
+						keyF->rotation[1] = it2._key.y;
+						keyF->rotation[2] = it2._key.z;
+						keyF->rotation[3] = it2._key.w;
+						conv_nodeAnim->rotate = true;
+					}
 				}
+				model->animations.push_back(conv_anim);
 			}
-			model->animations.push_back(conv_anim);
 			return true;
 		}
 
@@ -162,15 +167,14 @@ class C3TConverter : public Reader
 			return 0;
 		}
 
-		Node* loadNode(cocos2d::NodeData const& pNode, bool skeleton, Model* const model) {
+		Node* loadNode(cocos2d::NodeData const* pNode, bool skeleton, Model* model) {
 			Node *conv_node = new Node;
-			conv_node->id = pNode.id;
-			memcpy(conv_node->transforms, pNode.transform.m, sizeof(conv_node->transforms));
-			conv_node->_skeleton = skeleton;
-			for(cocos2d::NodeData const* coco_node : pNode.children) {
-				conv_node->children.push_back(loadNode(*coco_node, skeleton, model));
+			conv_node->id = pNode->id;
+			memcpy(conv_node->transforms, pNode->transform.m, sizeof(conv_node->transforms));
+			for(cocos2d::NodeData const* coco_node : pNode->children) {
+				conv_node->children.push_back(loadNode(coco_node, skeleton, model));
 			}
-			for(cocos2d::ModelData const* coco_model : pNode.modelNodeDatas) {
+			for(cocos2d::ModelData const* coco_model : pNode->modelNodeDatas) {
 				NodePart *conv_nodePart = new NodePart;
 				std::vector<Material*>::iterator material = std::find_if(model->materials.begin(),
 				                                                         model->materials.end(),
@@ -191,15 +195,32 @@ class C3TConverter : public Reader
 						break;
 					}
 				}
+				for(int i = 0; i < coco_model->bones.size(); ++i) {
+					Node* node = findNode(coco_model->bones[i], model->nodes);
+					if(node) {
+						std::pair<Node*, FbxAMatrix> nPair;
+						nPair.first = node;
+						//double f[4][4] = nPair.second.Double44();
+						for (int j = 0; j < 16; ++j) {
+							nPair.second.mData[j / 4].mData[j % 4] = coco_model->invBindPose[i].m[j];
+							//f[j] = nPair.second.Get(j % 4, j / 4);
+							//coco_model->invBindPose[i].m[j] = nPair.second.Get(j % 4, j / 4);
+						}
+						//coco_model->invBindPose[i].set(f);
+						//memcpy(nPair.second, &coco_model->invBindPose[i], sizeof(nPair.second));
+						conv_nodePart->bones.push_back(nPair);
+					}
+				}
 				conv_node->parts.push_back(conv_nodePart);
 			}
+			conv_node->setSkeleton(skeleton);
 			return conv_node;
 		}
 
-		Node const* findNode(std::string const& nodeName, std::vector<Node*> const& vec) {
-			for(Node const* node : vec) {
+		Node* findNode(std::string const& nodeName, std::vector<Node*>& vec) {
+			for(Node* node : vec) {
 				if (node->id == nodeName) return node;
-				Node const* n2 = findNode(nodeName, node->children);
+				Node* n2 = findNode(nodeName, node->children);
 				if (n2) return n2;
 			}
 			return nullptr;
@@ -237,7 +258,8 @@ class C3TConverter : public Reader
 		cocos2d::MeshDatas meshDatas;
 		cocos2d::MaterialDatas materialDatas;
 		cocos2d::NodeDatas nodeDatas;
-		cocos2d::Animation3DData animationData;
+		std::map<std::string, cocos2d::Animation3DData> animationDatas;
+		//cocos2d::Animation3DData animationData;
 };
 
 } // namespace readers
