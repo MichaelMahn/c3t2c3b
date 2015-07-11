@@ -32,6 +32,4 @@ int main(int argc, char **argv)
 	int argc1 = 3;
 	char const *argv1[3] = {"", "-a", filePath};
 	conv.execute(argc1, argv1);
-	/*AppDelegate app;
-	return Application::getInstance()->run();*/
 }

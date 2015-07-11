@@ -24,8 +24,6 @@ class C3TConverter : public Reader
 			bool ret = bundle->loadMeshDatas(meshDatas)
 			        && bundle->loadMaterials(materialDatas)
 			        && bundle->loadNodes(nodeDatas);
-
-			//        && bundle->loadAnimationData("", &animationData);
 			bundle->loadAnimationNamesJson(animationDatas);
 			cocos2d::Bundle3D::destroyBundle(bundle);
 
@@ -51,14 +49,14 @@ class C3TConverter : public Reader
 			for(cocos2d::MeshData const* coco_meshIt : meshDatas.meshDatas) {
 				Mesh *conv_mesh = new Mesh;
 				conv_mesh->vertexSize = coco_meshIt->getPerVertexSize() / sizeof(float);
-				for(float const& v : coco_meshIt->vertex) {
+				for(float const v : coco_meshIt->vertex) {
 					conv_mesh->vertices.push_back(v);
 				}
 
 				for(int i = 0; i < coco_meshIt->subMeshIndices.size(); ++i) {
 					MeshPart *conv_meshPart = new MeshPart;
 					conv_meshPart->primitiveType = PRIMITIVETYPE_TRIANGLES;
-					for(unsigned short const& s : coco_meshIt->subMeshIndices[i]) {
+					for(unsigned short const s : coco_meshIt->subMeshIndices[i]) {
 						conv_meshPart->indices.push_back(s);
 					}
 					if(coco_meshIt->subMeshIds.size() > i) {
@@ -178,7 +176,7 @@ class C3TConverter : public Reader
 				NodePart *conv_nodePart = new NodePart;
 				std::vector<Material*>::iterator material = std::find_if(model->materials.begin(),
 				                                                         model->materials.end(),
-				                                                         [&coco_model](Material* const& mat){return mat->id == coco_model->matrialId;});
+				                                                         [&coco_model](Material* mat){return mat->id == coco_model->matrialId;});
 				if(material != model->materials.end()) {
 					conv_nodePart->material = *material;
 				} else {
@@ -189,7 +187,7 @@ class C3TConverter : public Reader
 				for(Mesh const* conv_mesh : model->meshes) {
 					std::vector<MeshPart*>::const_iterator meshPart = std::find_if(conv_mesh->parts.begin(),
 					                                                               conv_mesh->parts.end(),
-					                                                               [&coco_model](MeshPart* const& meshPart){return meshPart->id == coco_model->subMeshId;});
+					                                                               [&coco_model](MeshPart* meshPart){return meshPart->id == coco_model->subMeshId;});
 					if(meshPart != conv_mesh->parts.end()) {
 						conv_nodePart->meshPart = *meshPart;
 						break;
@@ -200,14 +198,9 @@ class C3TConverter : public Reader
 					if(node) {
 						std::pair<Node*, FbxAMatrix> nPair;
 						nPair.first = node;
-						//double f[4][4] = nPair.second.Double44();
 						for (int j = 0; j < 16; ++j) {
 							nPair.second.mData[j / 4].mData[j % 4] = coco_model->invBindPose[i].m[j];
-							//f[j] = nPair.second.Get(j % 4, j / 4);
-							//coco_model->invBindPose[i].m[j] = nPair.second.Get(j % 4, j / 4);
 						}
-						//coco_model->invBindPose[i].set(f);
-						//memcpy(nPair.second, &coco_model->invBindPose[i], sizeof(nPair.second));
 						conv_nodePart->bones.push_back(nPair);
 					}
 				}
@@ -230,7 +223,7 @@ class C3TConverter : public Reader
 			Keyframe *ret;
 			std::vector<Keyframe*>::iterator it = std::find_if(nodeAnim.keyframes.begin(),
 			                                                   nodeAnim.keyframes.end(),
-			                                                   [time](Keyframe* const& keyframe){return keyframe->time == time;});
+			                                                   [time](Keyframe* keyframe){return keyframe->time == time;});
 			if (nodeAnim.keyframes.end() == it) {
 				ret = new Keyframe;
 				nodeAnim.keyframes.push_back(ret);
@@ -244,7 +237,7 @@ class C3TConverter : public Reader
 			NodeAnimation *ret;
 			std::vector<NodeAnimation*>::iterator it = std::find_if(animation.nodeAnimations.begin(),
 			                                                        animation.nodeAnimations.end(),
-			                                                        [node](NodeAnimation* const nodeAnimation){return nodeAnimation->node == node;});
+			                                                        [node](NodeAnimation* nodeAnimation){return nodeAnimation->node == node;});
 			if (animation.nodeAnimations.end() == it) {
 				ret = new NodeAnimation;
 				animation.nodeAnimations.push_back(ret);
@@ -259,7 +252,6 @@ class C3TConverter : public Reader
 		cocos2d::MaterialDatas materialDatas;
 		cocos2d::NodeDatas nodeDatas;
 		std::map<std::string, cocos2d::Animation3DData> animationDatas;
-		//cocos2d::Animation3DData animationData;
 };
 
 } // namespace readers

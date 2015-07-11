@@ -20,9 +20,6 @@
 #ifndef MODELDATA_NODE_H
 #define MODELDATA_NODE_H
 
-#define COCOS2D_DEBUG 1
-
-#include "cocos2d.h"
 #include <vector>
 #include <fbxsdk.h>
 #include "NodePart.h"
@@ -137,7 +134,6 @@ namespace modeldata {
             bool ret = (iter != bonenames.end()) ? true : false;
             return ret;*/
             for (std::list<std::string>::const_iterator iterator = bonenames.begin(), end = bonenames.end(); iterator != end; ++iterator) {
-                 CCLOG(iterator->c_str());
                  if (iterator->compare(name) == 0) return true;
             }
             return false;
